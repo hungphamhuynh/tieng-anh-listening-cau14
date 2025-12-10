@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bài tập ghép nối kéo thả - Hiển thị đáp án</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      gap: 50px;
+      margin-bottom: 20px;
+    }
+
+    .people,
+    .actions {
+      list-style: none;
+      padding: 0;
+    }
+
+    .people li,
+    .actions li {
+      padding: 10px 15px;
+      margin: 10px 0;
+      background: #f0f0f0;
+      border-radius: 5px;
+      cursor: pointer;
+      user-select: none;
+      min-width: 150px;
+      text-align: center;
+    }
+
+    .people li.drop-target {
+      background: #e2e3e5;
+    }
+
+    .correct {
+      background: #d1e7dd !important;
+    }
+
+    .wrong {
+      background: #f8d7da !important;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .answer {
+      font-style: italic;
+      color: blue;
+      margin-top: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Bài tập ghép nối kéo thả - Hiển thị đáp án</h2>
+  <div id="exam-number"></div>
+  <div id="question-container"></div>
+  <div class="feedback" id="feedback"></div>
+
+  <button onclick="checkAnswer()">Kiểm tra câu này</button>
+  <button onclick="nextQuestion()">Câu tiếp theo</button>
+
+  <script>
+    // Mảng JSON các câu, có trường 'examNumber' do bạn tự quyết định
+    const questions = [
+      {
+        examNumber: "Đề 1",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: ["To relax", "After walking up", "While singing", "While studying"],
+        answers: {
+          "Person A": "To relax",
+          "Person B": "After walking up",
+          "Person C": "While singing",
+          "Person D": "While studying"
+        }
+      },
+      {
+        examNumber: "Đề 2",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: ["Horse riding", "Going for a run", "Climbing", "Mountain biking"],
+        answers: {
+          "Person A": "Horse riding",
+          "Person B": "Going for a run",
+          "Person C": "Climbing",
+          "Person D": "Mountain biking"
+        }
+      },
+      {
+        examNumber: "Đề 3",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: ["The products are delivered", "It is cheaper", "It saves time", "There are more choices"],
+        answers: {
+          "Person A": "The products are delivered",
+          "Person B": "It is cheaper",
+          "Person C": "It saves time",
+          "Person D": "There are more choices"
+        }
+      },
+      {
+        examNumber: "Đề 4",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "Does not use commercial cleaning products",
+          "Give away used items",
+          "Buy environmentally friendly products",
+          "Reuse containers for storing food"
+        ],
+        answers: {
+          "Person A": "Does not use commercial cleaning products",
+          "Person B": "Give away used items",
+          "Person C": "Buy environmentally friendly products",
+          "Person D": "Reuse containers for storing food"
+        }
+      },
+      {
+        examNumber: "Đề 5",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "Shopping online",
+          "Not driving to work",
+          "Using less electricity",
+          "Using less water"
+        ],
+        answers: {
+          "Person A": "Shopping online",
+          "Person B": "Not driving to work",
+          "Person C": "Using less electricity",
+          "Person D": "Using less water"
+        }
+      },
+      {
+        examNumber: "Đề 6",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "In the fitness centre",
+          "At the seaside",
+          "In the street",
+          "On the running track"
+        ],
+        answers: {
+          "Person A": "In the fitness centre",
+          "Person B": "At the seaside",
+          "Person C": "In the street",
+          "Person D": "On the running track"
+        }
+      },
+      {
+        examNumber: "Đề 7",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "In various places",
+          "In a quiet place",
+          "With music",
+          "Late at night"
+        ],
+        answers: {
+          "Person A": "In various places",
+          "Person B": "In a quiet place",
+          "Person C": "With music",
+          "Person D": "Late at night"
+        }
+      },
+      {
+        examNumber: "Đề 8",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "In the coffee shop",
+          "In the park",
+          "On public transport",
+          "At home"
+        ],
+        answers: {
+          "Person A": "In the coffee shop",
+          "Person B": "In the park",
+          "Person C": "On public transport",
+          "Person D": "At home"
+        }
+      },
+      {
+        examNumber: "Đề 9",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "Social activity",
+          "With children",
+          "As part of their job",
+          "Alone"
+        ],
+        answers: {
+          "Person A": "Social activity",
+          "Person B": "With children",
+          "Person C": "As part of their job",
+          "Person D": "Alone"
+        }
+      },
+      {
+        examNumber: "Đề 10",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "Travel by bus",
+          "Travel by car",
+          "Walk alone",
+          "Walk with a friend"
+        ],
+        answers: {
+          "Person A": "Travel by bus",
+          "Person B": "Travel by car",
+          "Person C": "Walk alone",
+          "Person D": "Walk with a friend"
+        }
+      },
+      {
+        examNumber: "Đề 12",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "Watch films",
+          "Communicate with friends",
+          "Complete assignments",
+          "Find transport information"
+        ],
+        answers: {
+          "Person A": "Watch films",
+          "Person B": "Communicate with friends",
+          "Person C": "Complete assignments",
+          "Person D": "Find transport information"
+        }
+      },
+      {
+        examNumber: "Đề 13",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "The products are delivered",
+          "It is cheaper",
+          "It saves time",
+          "There are more choices"
+        ],
+        answers: {
+          "Person A": "The products are delivered",
+          "Person B": "It is cheaper",
+          "Person C": "It saves time",
+          "Person D": "There are more choices"
+        }
+      },
+      {
+        examNumber: "Đề 14",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "Prefers shopping with friends",
+          "Likes shopping in some quiet places",
+          "Prefers shopping on holidays",
+          "Likes shopping alone"
+        ],
+        answers: {
+          "Person A": "Prefers shopping with friends",
+          "Person B": "Likes shopping in some quiet places",
+          "Person C": "Prefers shopping on holidays",
+          "Person D": "Likes shopping alone"
+        }
+      },
+      {
+        examNumber: "Đề 15",
+        people: ["Person A", "Person B", "Person C", "Person D"],
+        actions: [
+          "Plays in a team sport",
+          "Spends time in the water",
+          "Plays in the street",
+          "Does sports with animals"
+        ],
+        answers: {
+          "Person A": "Plays in a team sport",
+          "Person B": "Spends time in the water",
+          "Person C": "Plays in the street",
+          "Person D": "Does sports with animals"
+        }
+      }
+    ];
+
+    let currentIndex = 0;
+
+    // Shuffle
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    // Render câu
+    function renderQuestion() {
+      const container = document.getElementById("question-container");
+      const feedback = document.getElementById("feedback");
+      const examNumberDiv = document.getElementById("exam-number");
+      container.innerHTML = "";
+      feedback.innerHTML = "";
+
+      if (currentIndex >= questions.length) {
+        container.innerHTML = "<p>Đã hoàn thành tất cả các câu!</p>";
+        examNumberDiv.innerHTML = "";
+        return;
+      }
+
+      const question = questions[currentIndex];
+      examNumberDiv.innerHTML = `<h3>${question.examNumber}</h3>`; // hiển thị đề do bạn quyết định
+
+      const div = document.createElement("div");
+      div.classList.add("container");
+
+      // Người
+      const peopleUl = document.createElement("ul");
+      peopleUl.classList.add("people");
+      question.people.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p;
+        li.dataset.person = p;
+        li.dataset.chosen = "";
+        li.addEventListener("dragover", e => e.preventDefault());
+        li.addEventListener("drop", e => {
+          e.preventDefault();
+          const action = e.dataTransfer.getData("text");
+
+          // Nếu đã có action cũ, trả về danh sách
+          if (li.dataset.chosen) {
+            const oldActionLi = document.createElement("li");
+            oldActionLi.textContent = li.dataset.chosen;
+            oldActionLi.draggable = true;
+            oldActionLi.addEventListener("dragstart", dragStartHandler);
+            document.querySelector(".actions").appendChild(oldActionLi);
+          }
+
+          li.textContent = `${p}: ${action}`;
+          li.dataset.chosen = action;
+
+          // Xóa action vừa kéo khỏi danh sách
+          document.querySelectorAll(".actions li").forEach(a => {
+            if (a.textContent === action) a.remove();
+          });
+        });
+        li.classList.add("drop-target");
+        peopleUl.appendChild(li);
+      });
+
+      // Actions đảo lộn
+      const actionsUl = document.createElement("ul");
+      actionsUl.classList.add("actions");
+      shuffleArray([...question.actions]).forEach(a => {
+        const li = document.createElement("li");
+        li.textContent = a;
+        li.draggable = true;
+        li.addEventListener("dragstart", dragStartHandler);
+        actionsUl.appendChild(li);
+      });
+
+      div.appendChild(peopleUl);
+      div.appendChild(actionsUl);
+      container.appendChild(div);
+    }
+
+    // Drag start
+    function dragStartHandler(e) {
+      e.dataTransfer.setData("text", e.target.textContent);
+    }
+
+    // Kiểm tra câu hiện tại
+    function checkAnswer() {
+      const question = questions[currentIndex];
+      const lis = document.querySelectorAll(".people li");
+      let allCorrect = true;
+
+      // Xóa feedback trước đó
+      document.querySelectorAll(".answer").forEach(a => a.remove());
+
+      lis.forEach(li => {
+        const person = li.dataset.person;
+        const chosen = li.dataset.chosen;
+        li.classList.remove("correct", "wrong");
+
+        const answerDiv = document.createElement("div");
+        answerDiv.classList.add("answer");
+
+        if (chosen === question.answers[person]) {
+          li.classList.add("correct");
+          answerDiv.textContent = `Đáp án: ${question.answers[person]}`;
+        } else {
+          li.classList.add("wrong");
+          allCorrect = false;
+          answerDiv.textContent = `Đáp án đúng: ${question.answers[person]}`;
+        }
+        li.appendChild(answerDiv);
+      });
+
+      const feedback = document.getElementById("feedback");
+      if (allCorrect) {
+        feedback.style.color = "green";
+        feedback.textContent = `${question.examNumber} - Câu đúng!`;
+        // Xóa câu khỏi mảng
+        questions.splice(currentIndex, 1);
+        renderQuestion();
+      } else {
+        feedback.style.color = "red";
+        feedback.textContent = `${question.examNumber} - Câu sai, xem ô đỏ và đáp án bên dưới.`;
+      }
+    }
+
+    // Câu tiếp theo
+    function nextQuestion() {
+      if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        alert("Đây là câu cuối hoặc đã hoàn thành tất cả câu!");
+      }
+    }
+
+    // Render câu đầu tiên
+    renderQuestion();
+  </script>
+
+</body>
+
+</html>
